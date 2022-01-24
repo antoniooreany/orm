@@ -8,13 +8,16 @@ import java.lang.reflect.Field;
 import java.util.StringJoiner;
 
 public class DefaultQueryGenerator implements QueryGenerator {
+    // SELECT person_id, name, age FROM Person;
     @Override
     public String findAll(Class<?> clazz) {
         Table tableAnnotation = getTableAnnotation(clazz);
 
         StringBuilder result = new StringBuilder("SELECT ");
 
-        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getSimpleName();
+        String tableName = !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : clazz.getSimpleName();
         //TODO is it correct 'clazz.getSimpleName()'???
 
         String parameters = getParameters(clazz);
@@ -25,20 +28,28 @@ public class DefaultQueryGenerator implements QueryGenerator {
         return result.toString();
     }
 
+    // SELECT person_id, name, age FROM Person WHERE person_id = 0001;
     @Override
     public String findById(Serializable id, Class<?> clazz) {
         Table tableAnnotation = getTableAnnotation(clazz);
+        String tableName = !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : clazz.getSimpleName();         //TODO is it correct 'clazz.getSimpleName()'???
+
+//        Column columnAnnotation = getColumnAnnotation(clazz);
+//        String columnName = !columnAnnotation.name().isEmpty()
+//                ? columnAnnotation.name()
+//                : clazz.getDeclaredFields()[0].getName();
 
         StringBuilder result = new StringBuilder("SELECT ");
-
-        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getSimpleName();
-        //TODO is it correct 'clazz.getSimpleName()'???
-
         String parameters = getParameters(clazz);
         result.append(parameters)
                 .append(" FROM ")
                 .append(tableName)
-                .append(" WHERE person_id = ") //TODO make 'person_id' non-hardcoded.
+                .append(" WHERE ")
+//                .append(columnName)
+                .append(clazz.getDeclaredFields()[0].getName())
+                .append(" = ")
                 .append(id)
                 .append(";");
         return result.toString();
@@ -62,16 +73,24 @@ public class DefaultQueryGenerator implements QueryGenerator {
         declaredField.setAccessible(true);
         declaredField1.setAccessible(true);
         declaredField2.setAccessible(true);
+
         result
                 .append(tableName)
-                .append(" (person_id, name, age) VALUES ('")
+                .append(" (")
+                .append(getParameters(clazz))
+                .append(") VALUES ('")   //;
+//        StringJoiner joiner = new StringJoiner("', '", "('", "');");
+//        for (Field field : clazz.getDeclaredFields()) {
+//            field.setAccessible(true);
+//            joiner.add((CharSequence) declaredField.get(value)); // TODO ClassCastException Integer to CharSequence
+//        }
+//        result.append(joiner);
                 .append(declaredField.get(value))
                 .append("', '")
                 .append(declaredField1.get(value))
                 .append("', '")
                 .append(declaredField2.get(value))
                 .append("');");
-
         return result.toString();
     }
 
@@ -83,15 +102,18 @@ public class DefaultQueryGenerator implements QueryGenerator {
         Class<?> clazz = value.getClass();
         Table tableAnnotation = getTableAnnotation(clazz);
 
-        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getSimpleName();
+        String tableName = !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : clazz.getSimpleName();
 
-        clazz.getDeclaredFields()[0].setAccessible(true);
+        Field declaredField = clazz.getDeclaredFields()[0];
+        declaredField.setAccessible(true);
 
         result.append(tableName)
                 .append(" WHERE ")
-                .append(clazz.getDeclaredFields()[0].getName())
+                .append(declaredField.getName())
                 .append(" = ")
-                .append(clazz.getDeclaredFields()[0].get(value))
+                .append(declaredField.get(value))
                 .append(";")
         ;
 
@@ -116,5 +138,13 @@ public class DefaultQueryGenerator implements QueryGenerator {
             throw new IllegalArgumentException("");
         }
         return tableAnnotation;
+    }
+
+    private Column getColumnAnnotation(Class<?> clazz) {
+        Column columnAnnotation = clazz.getAnnotation(Column.class);
+        if (columnAnnotation == null) {
+            throw new IllegalArgumentException("");
+        }
+        return columnAnnotation;
     }
 }

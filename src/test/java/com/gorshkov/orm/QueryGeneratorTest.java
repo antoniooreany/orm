@@ -22,7 +22,7 @@ public class QueryGeneratorTest {
     public void findByIdTest() {
         Serializable id = "0001";
         String expectedQuery = new StringBuilder()
-                .append("SELECT person_id, name, age FROM Person WHERE person_id = ")
+                .append("SELECT person_id, name, age FROM Person WHERE id = ")
                 .append(id)
                 .append(";").toString();
         QueryGenerator queryGenerator = new DefaultQueryGenerator();
@@ -33,14 +33,17 @@ public class QueryGeneratorTest {
 
     @Test
     public void insertTest() throws IllegalAccessException {
-        Person person = new Person(1, "John", 33);
+        int id = 1;
+        String name = "John";
+        int age = 33;
+        Person person = new Person(id, name, age);
         String expectedQuery = new StringBuilder()
                 .append("INSERT INTO Person (person_id, name, age) VALUES ('")
-                .append(person.getId())
+                .append(id)
                 .append("', '")
-                .append(person.getName())
+                .append(name)
                 .append("', '")
-                .append(person.getAge())
+                .append(age)
                 .append("');")
                 .toString();
         QueryGenerator queryGenerator = new DefaultQueryGenerator();
@@ -49,11 +52,13 @@ public class QueryGeneratorTest {
         assertEquals(expectedQuery, actualQuery);
     }
 
-
-    //DELETE FROM table_name WHERE id = 0001;
+    //DELETE FROM table_name WHERE id = 1;
     @Test
     public void deleteTest() throws IllegalAccessException {
-        Person person = new Person(1, "John", 33);
+        int id = 1;
+        String name = "John";
+        int age = 33;
+        Person person = new Person(id, name, age);
         person.getClass().getDeclaredFields()[0].setAccessible(true);
         String expectedQuery = new StringBuilder()
                 .append("DELETE FROM ")
@@ -61,8 +66,7 @@ public class QueryGeneratorTest {
                 .append(" WHERE ")
                 .append(person.getClass().getDeclaredFields()[0].getName())
                 .append(" = ")
-//                .append(person.getClass().getDeclaredFields()[0].get(person))
-                .append(1)
+                .append(id)
                 .append(";")
                 .toString();
         QueryGenerator queryGenerator = new DefaultQueryGenerator();
@@ -70,7 +74,5 @@ public class QueryGeneratorTest {
 
         assertEquals(expectedQuery, actualQuery);
     }
-
-
 
 }
