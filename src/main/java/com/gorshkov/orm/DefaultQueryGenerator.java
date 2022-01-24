@@ -13,7 +13,9 @@ public class DefaultQueryGenerator implements QueryGenerator {
         Table tableAnnotation = getTableAnnotation(clazz);
 
         StringBuilder result = new StringBuilder("SELECT ");
-        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getName();
+
+        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getSimpleName();
+        //TODO is it correct 'clazz.getSimpleName()'???
 
         String parameters = getParameters(clazz);
         result.append(parameters)
@@ -25,17 +27,75 @@ public class DefaultQueryGenerator implements QueryGenerator {
 
     @Override
     public String findById(Serializable id, Class<?> clazz) {
-        return null;
+        Table tableAnnotation = getTableAnnotation(clazz);
+
+        StringBuilder result = new StringBuilder("SELECT ");
+
+        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getSimpleName();
+        //TODO is it correct 'clazz.getSimpleName()'???
+
+        String parameters = getParameters(clazz);
+        result.append(parameters)
+                .append(" FROM ")
+                .append(tableName)
+                .append(" WHERE person_id = ") //TODO make 'person_id' non-hardcoded.
+                .append(id)
+                .append(";");
+        return result.toString();
     }
 
+    // "INSERT INTO Person (person_id, name, age) VALUES ('1', 'John', '33')
     @Override
-    public String insert(Object value) {
-        return null;
+    public String insert(Object value) throws IllegalAccessException {
+        Class<?> clazz = value.getClass();
+        Table tableAnnotation = getTableAnnotation(clazz);
+
+        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getSimpleName();
+        //TODO is it correct 'clazz.getSimpleName()'???
+
+        StringBuilder result = new StringBuilder("INSERT INTO ");
+
+        Field declaredField = clazz.getDeclaredFields()[0];
+        Field declaredField1 = clazz.getDeclaredFields()[1];
+        Field declaredField2 = clazz.getDeclaredFields()[2];
+
+        declaredField.setAccessible(true);
+        declaredField1.setAccessible(true);
+        declaredField2.setAccessible(true);
+        result
+                .append(tableName)
+                .append(" (person_id, name, age) VALUES ('")
+                .append(declaredField.get(value))
+                .append("', '")
+                .append(declaredField1.get(value))
+                .append("', '")
+                .append(declaredField2.get(value))
+                .append("');");
+
+        return result.toString();
     }
 
+    //DELETE FROM table_name WHERE id = 0001;
     @Override
-    public String delete(Object value) {
-        return null;
+    public String delete(Object value) throws IllegalAccessException {
+        StringBuilder result = new StringBuilder("DELETE FROM ");
+
+        Class<?> clazz = value.getClass();
+        Table tableAnnotation = getTableAnnotation(clazz);
+
+        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getSimpleName();
+
+        clazz.getDeclaredFields()[0].setAccessible(true);
+
+        result.append(tableName)
+                .append(" WHERE ")
+                .append(clazz.getDeclaredFields()[0].getName())
+                .append(" = ")
+                .append(clazz.getDeclaredFields()[0].get(value))
+                .append(";")
+        ;
+
+        return result.toString();
     }
 
     private String getParameters(Class<?> clazz) {

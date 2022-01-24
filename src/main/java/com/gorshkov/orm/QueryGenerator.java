@@ -7,7 +7,7 @@ public interface QueryGenerator {
 
     String findById(Serializable id, Class<?> clazz);
 
-    String insert(Object value);
+    String insert(Object value) throws IllegalAccessException;
 
-    String delete(Object value);
+    String delete(Object value) throws IllegalAccessException;
 }
