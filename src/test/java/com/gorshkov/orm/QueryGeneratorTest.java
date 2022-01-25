@@ -22,7 +22,7 @@ public class QueryGeneratorTest {
     public void findByIdTest() {
         Serializable id = "0001";
         String expectedQuery = new StringBuilder()
-                .append("SELECT person_id, name, age FROM Person WHERE id = ")
+                .append("SELECT person_id, name, age FROM Person WHERE person_id = ")
                 .append(id)
                 .append(";").toString();
         QueryGenerator queryGenerator = new DefaultQueryGenerator();

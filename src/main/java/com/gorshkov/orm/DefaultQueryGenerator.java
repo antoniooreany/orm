@@ -12,15 +12,14 @@ public class DefaultQueryGenerator implements QueryGenerator {
     @Override
     public String findAll(Class<?> clazz) {
         Table tableAnnotation = getTableAnnotation(clazz);
-
-        StringBuilder result = new StringBuilder("SELECT ");
-
         String tableName = !tableAnnotation.name().isEmpty()
                 ? tableAnnotation.name()
                 : clazz.getSimpleName();
         //TODO is it correct 'clazz.getSimpleName()'???
 
         String parameters = getParameters(clazz);
+
+        StringBuilder result = new StringBuilder("SELECT ");
         result.append(parameters)
                 .append(" FROM ")
                 .append(tableName)
@@ -36,10 +35,10 @@ public class DefaultQueryGenerator implements QueryGenerator {
                 ? tableAnnotation.name()
                 : clazz.getSimpleName();         //TODO is it correct 'clazz.getSimpleName()'???
 
-//        Column columnAnnotation = getColumnAnnotation(clazz);
-//        String columnName = !columnAnnotation.name().isEmpty()
-//                ? columnAnnotation.name()
-//                : clazz.getDeclaredFields()[0].getName();
+        Column columnAnnotation = getColumnAnnotation(clazz);
+        String columnName = !columnAnnotation.name().isEmpty()
+                ? columnAnnotation.name()
+                : clazz.getDeclaredFields()[0].getName();
 
         StringBuilder result = new StringBuilder("SELECT ");
         String parameters = getParameters(clazz);
@@ -47,8 +46,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
                 .append(" FROM ")
                 .append(tableName)
                 .append(" WHERE ")
-//                .append(columnName)
-                .append(clazz.getDeclaredFields()[0].getName())
+                .append(columnName)
                 .append(" = ")
                 .append(id)
                 .append(";");
@@ -141,7 +139,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
     }
 
     private Column getColumnAnnotation(Class<?> clazz) {
-        Column columnAnnotation = clazz.getAnnotation(Column.class);
+        Column columnAnnotation = clazz.getDeclaredFields()[0].getAnnotation(Column.class);
         if (columnAnnotation == null) {
             throw new IllegalArgumentException("");
         }
