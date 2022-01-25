@@ -1,10 +1,12 @@
 package com.gorshkov.orm.entity;
 
 import com.gorshkov.orm.annotation.Column;
+import com.gorshkov.orm.annotation.Id;
 import com.gorshkov.orm.annotation.Table;
 
 @Table(name = "")
 public class Person {
+    @Id
     @Column(name = "person_id")
     private  int id;
 
