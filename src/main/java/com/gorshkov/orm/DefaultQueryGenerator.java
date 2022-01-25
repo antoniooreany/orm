@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.util.StringJoiner;
 
 public class DefaultQueryGenerator implements QueryGenerator {
+
     // SELECT person_id, name, age FROM Person;
     @Override
     public String findAll(Class<?> clazz) {
@@ -17,10 +18,10 @@ public class DefaultQueryGenerator implements QueryGenerator {
                 : clazz.getSimpleName();
         //TODO is it correct 'clazz.getSimpleName()'???
 
-        String parameters = getParameters(clazz);
+        String columnsDelimeteredByComas = getColumnsDelimiteredByComas(clazz);
 
         StringBuilder result = new StringBuilder("SELECT ");
-        result.append(parameters)
+        result.append(columnsDelimeteredByComas)
                 .append(" FROM ")
                 .append(tableName)
                 .append(";");
@@ -41,8 +42,8 @@ public class DefaultQueryGenerator implements QueryGenerator {
                 : clazz.getDeclaredFields()[0].getName();
 
         StringBuilder result = new StringBuilder("SELECT ");
-        String parameters = getParameters(clazz);
-        result.append(parameters)
+        String columnsDelimeteredByComas = getColumnsDelimiteredByComas(clazz);
+        result.append(columnsDelimeteredByComas)
                 .append(" FROM ")
                 .append(tableName)
                 .append(" WHERE ")
@@ -66,7 +67,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         StringBuilder result = new StringBuilder("INSERT INTO ");
         result.append(tableName)
                 .append(" (")
-                .append(getParameters(clazz))
+                .append(getColumnsDelimiteredByComas(clazz))
                 .append(") VALUES ('");
 //        StringJoiner joiner = new StringJoiner("', '", "('", "');");
 //        for (Field field : clazz.getDeclaredFields()) {
@@ -109,7 +110,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         return result.toString();
     }
 
-    private String getParameters(Class<?> clazz) {
+    private String getColumnsDelimiteredByComas(Class<?> clazz) {
         StringJoiner parameters = new StringJoiner(", ");
         for (Field declaredField : clazz.getDeclaredFields()) {
             Column columnAnnotation = declaredField.getAnnotation(Column.class);
@@ -124,7 +125,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
     private Table getTableAnnotation(Class<?> clazz) {
         Table tableAnnotation = clazz.getAnnotation(Table.class);
         if (tableAnnotation == null) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("clazz.getAnnotation(Table.class) == null");
         }
         return tableAnnotation;
     }
@@ -132,7 +133,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
     private Column getColumnAnnotation(Class<?> clazz) {
         Column columnAnnotation = clazz.getDeclaredFields()[0].getAnnotation(Column.class);
         if (columnAnnotation == null) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("clazz.getDeclaredFields()[0].getAnnotation(Column.class) == null");
         }
         return columnAnnotation;
     }
