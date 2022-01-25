@@ -58,48 +58,39 @@ public class DefaultQueryGenerator implements QueryGenerator {
     public String insert(Object value) throws IllegalAccessException {
         Class<?> clazz = value.getClass();
         Table tableAnnotation = getTableAnnotation(clazz);
-
-        String tableName = !tableAnnotation.name().isEmpty() ? tableAnnotation.name() : clazz.getSimpleName();
+        String tableName = !tableAnnotation.name().isEmpty()
+                ? tableAnnotation.name()
+                : clazz.getSimpleName();
         //TODO is it correct 'clazz.getSimpleName()'???
 
         StringBuilder result = new StringBuilder("INSERT INTO ");
-
-        Field declaredField = clazz.getDeclaredFields()[0];
-        Field declaredField1 = clazz.getDeclaredFields()[1];
-        Field declaredField2 = clazz.getDeclaredFields()[2];
-
-        declaredField.setAccessible(true);
-        declaredField1.setAccessible(true);
-        declaredField2.setAccessible(true);
-
-        result
-                .append(tableName)
+        result.append(tableName)
                 .append(" (")
                 .append(getParameters(clazz))
-                .append(") VALUES ('")   //;
+                .append(") VALUES ('");
 //        StringJoiner joiner = new StringJoiner("', '", "('", "');");
 //        for (Field field : clazz.getDeclaredFields()) {
 //            field.setAccessible(true);
 //            joiner.add((CharSequence) declaredField.get(value)); // TODO ClassCastException Integer to CharSequence
 //        }
 //        result.append(joiner);
-                .append(declaredField.get(value))
-                .append("', '")
-                .append(declaredField1.get(value))
-                .append("', '")
-                .append(declaredField2.get(value))
-                .append("');");
+        Field[] declaredFields = clazz.getDeclaredFields();
+        for (int i = 0; i < declaredFields.length; i++) {
+            declaredFields[i].setAccessible(true);
+            result.append(declaredFields[i].get(value));
+            if (i < declaredFields.length - 1) {
+                result.append("', '");
+            }
+        }
+        result.append("');");
         return result.toString();
     }
 
     //DELETE FROM table_name WHERE id = 0001;
     @Override
     public String delete(Object value) throws IllegalAccessException {
-        StringBuilder result = new StringBuilder("DELETE FROM ");
-
         Class<?> clazz = value.getClass();
         Table tableAnnotation = getTableAnnotation(clazz);
-
         String tableName = !tableAnnotation.name().isEmpty()
                 ? tableAnnotation.name()
                 : clazz.getSimpleName();
@@ -107,6 +98,7 @@ public class DefaultQueryGenerator implements QueryGenerator {
         Field declaredField = clazz.getDeclaredFields()[0];
         declaredField.setAccessible(true);
 
+        StringBuilder result = new StringBuilder("DELETE FROM ");
         result.append(tableName)
                 .append(" WHERE ")
                 .append(declaredField.getName())
@@ -114,7 +106,6 @@ public class DefaultQueryGenerator implements QueryGenerator {
                 .append(declaredField.get(value))
                 .append(";")
         ;
-
         return result.toString();
     }
 
