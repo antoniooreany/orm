@@ -34,7 +34,8 @@ public class DefaultQueryGenerator implements QueryGenerator {
         Table tableAnnotation = getTableAnnotation(clazz);
         String tableName = !tableAnnotation.name().isEmpty()
                 ? tableAnnotation.name()
-                : clazz.getSimpleName();         //TODO is it correct 'clazz.getSimpleName()'???
+                : clazz.getSimpleName();
+        //TODO is it correct 'clazz.getSimpleName()'???
 
         Column columnAnnotation = getColumnAnnotation(clazz);
         String columnName = !columnAnnotation.name().isEmpty()
@@ -115,7 +116,9 @@ public class DefaultQueryGenerator implements QueryGenerator {
         for (Field declaredField : clazz.getDeclaredFields()) {
             Column columnAnnotation = declaredField.getAnnotation(Column.class);
             if (columnAnnotation != null) {
-                String fieldName = !columnAnnotation.name().isEmpty() ? columnAnnotation.name() : declaredField.getName();
+                String fieldName = !columnAnnotation.name().isEmpty()
+                        ? columnAnnotation.name()
+                        : declaredField.getName();
                 parameters.add(fieldName);
             }
         }
